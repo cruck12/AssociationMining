@@ -1,32 +1,33 @@
 from itertools import chain, combinations		#for generating powerset of a given set
 
-minSupport = 0.15
+minSupport = 0.025
 minConfidence = 0.6
 
 itemSet = set()
 transactions = []		
-data = open('dummy.csv', 'rU')	#reading the dataset
+data = open('retail.csv', 'rU')	#reading the dataset
+
+freqSet = dict()	#dictionary that stores frequency of each itemset
+
 for line in data:
 	line = line.strip().rstrip(' ')        	#remove any trailing spaces
 	line = line.split(' ')
 	transaction = frozenset([int(x) for x in line])	#each set in transaction list is immutable
 	for item in transaction:
 		itemSet.add(frozenset([item]))		#initialize itemSets for k=1
-	transactions.append(transaction)	
+		if frozenset([item]) in freqSet:
+			freqSet[frozenset([item])] += 1
+		else:
+			freqSet[frozenset([item])] = 1
+	transactions.append(transaction)
 
-freqSet = dict()	#dictionary that stores frequency of each itemset
 
 #Pruning the length 1 (k=1) itemsets:-
 currentSet = set()
-for item in itemSet:
-	counter = 0
-	for transaction in transactions:
-		if item.issubset(transaction):
-			counter +=1
-	support = float(counter)/len(transactions)
+for item in freqSet:
+	support = float(freqSet[item])/len(transactions)
 	if(support >= minSupport):
 		currentSet.add(item)
-		freqSet[item] = counter
 
 largeSet = dict()	#dictionary that stores the itemsets statisfying the minSupport, with the key corresponding to length of itemset
 
@@ -70,8 +71,8 @@ itemsets.sort(key = lambda x: x[1])
 print('ITEMS:-')
 #print(itemsets)
 for item,support in itemsets:
-	print(str(item)+"\t\t\t"+str(support))
+	print(str(item)+"            "+str(support))
 print('\nRULES:-')
 rules.sort(key = lambda x: x[1])
 for rule,confidence in rules:
-	print(str(rule[0])+"-->"+str(rule[1])+"\t\t\t"+str(confidence))
+	print(str(rule[0])+"-->"+str(rule[1])+"             "+str(confidence))
