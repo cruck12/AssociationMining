@@ -1,5 +1,7 @@
 import itertools
 from itertools import chain, combinations
+import time
+time_init = time.time()
 
 minSupport = 0.025
 minConfidence = 0.6
@@ -8,34 +10,25 @@ data = open('retail.csv', 'rU')	#reading the dataset
 
 
 class FPNode(object):
-	"""
-	A node in the FP tree.
-	"""
 
 	def __init__(self, value, count, parent):
-		"""
-		Create the node.
-		"""
+
 		self.value = value
 		self.count = count
 		self.parent = parent
 		self.link = None
 		self.children = []
 
+# check if node has a particular child
 	def has_child(self, value):
-		"""
-		Check if node has a particular child node.
-		"""
 		for node in self.children:
 			if node.value == value:
 				return True
 
 		return False
 
+# get the child node if exists
 	def get_child(self, value):
-		"""
-		Return a child node with a particular value.
-		"""
 		for node in self.children:
 			if node.value == value:
 				return node
@@ -43,22 +36,15 @@ class FPNode(object):
 		return None
 
 	def add_child(self, value):
-		"""
-		Add a node as a child node.
-		"""
 		child = FPNode(value, 1, self)
 		self.children.append(child)
 		return child
 
 
 class FPTree(object):
-	"""
-	A frequent pattern tree.
-	"""
 
 	def __init__(self, transactions, threshold, root_value, root_count):
 		"""
-		Initialize the tree.
 		Transactions -- list of iterable items 
 		"""
 		self.frequent = self.find_frequent_items(transactions, threshold)
@@ -69,9 +55,8 @@ class FPTree(object):
 
 	@staticmethod
 	def find_frequent_items(transactions, threshold):
-		"""
-		Create a dictionary of items with occurrences above the threshold.
-		"""
+
+		# Return the counts of items in the dataset
 		items = {}
 
 		for transaction in transactions:
@@ -89,9 +74,6 @@ class FPTree(object):
 
 	@staticmethod
 	def build_header_table(frequent):
-		"""
-		Build the header table.
-		"""
 		headers = {}
 		for key in frequent.keys():
 			headers[key] = None
@@ -100,9 +82,6 @@ class FPTree(object):
 
 	def build_fptree(self, transactions, root_value,
 					 root_count, frequent, headers):
-		"""
-		Build the FP tree and return the root node.
-		"""
 		root = FPNode(root_value, root_count, None)
 
 		for transaction in transactions:
@@ -114,9 +93,6 @@ class FPTree(object):
 		return root
 
 	def insert_tree(self, items, node, headers):
-		"""
-		Recursively grow FP tree.
-		"""
 		first = items[0]
 		child = node.get_child(first)
 		if child is not None:
@@ -141,8 +117,7 @@ class FPTree(object):
 
 	def tree_has_single_path(self, node):
 		"""
-		If there is a single path in the tree,
-		return True, else return False.
+		Check if there is only a single path in the tree
 		"""
 		num_children = len(node.children)
 		if num_children > 1:
@@ -163,8 +138,7 @@ class FPTree(object):
 
 	def zip_patterns(self, patterns):
 		"""
-		Append suffix to patterns in dictionary if
-		we are in a conditional FP tree.
+		Append suffix to patterns in dictionary if we are in a conditional FP tree.
 		"""
 		suffix = self.root.value
 
@@ -179,9 +153,6 @@ class FPTree(object):
 		return patterns
 
 	def generate_pattern_list(self):
-		"""
-		Generate a list of patterns with support counts.
-		"""
 		patterns = {}
 		items = self.frequent.keys()
 
@@ -252,20 +223,13 @@ class FPTree(object):
 
 
 def find_frequent_patterns(transactions, support_threshold):
-	"""
-	Given a set of transactions, find the patterns in it
-	over the specified support threshold.
-	"""
 	tree = FPTree(transactions, support_threshold, None, None)
 	return tree.mine_patterns(support_threshold)
 
 
+
 def generate_association_rules(patterns, confidence_threshold):
-	"""
-	Given a set of frequent itemsets, return a dict
-	of association rules in the form
-	{(left): ((right), confidence)}
-	"""
+
 	rules = {}
 	for itemset in patterns.keys():
 		upper_support = patterns[itemset]
@@ -294,38 +258,23 @@ for line in data:
 	line = line.strip().rstrip(' ')        	#remove any trailing spaces
 	line = line.split(' ')
 	transaction = frozenset([int(x) for x in line])	#each set in transaction list is immutable
-	for item in transaction:
-		itemSet.add(frozenset([item]))		#initialize itemSets for k=1
-		if frozenset([item]) in freqSet:
-			freqSet[frozenset([item])] += 1
-		else:
-			freqSet[frozenset([item])] = 1
+	# for item in transaction:
+	# 	itemSet.add(frozenset([item]))		#initialize itemSets for k=1
+	# 	if frozenset([item]) in freqSet:
+	# 		freqSet[frozenset([item])] += 1
+	# 	else:
+	# 		freqSet[frozenset([item])] = 1
 	transactions.append(transaction)
 
 patterns = find_frequent_patterns(transactions, minSupport*len(transactions))
-	
-# print (patterns)
+print(time.time()-time_init)
 
 rules = generate_association_rules(patterns, minConfidence)
-# rules = []
-# for itemset in patterns.keys():
-# 	item = set(itemset)
-# 	powerSet = map(frozenset, [x for x in chain(*[combinations(item, i + 1) for i, a in enumerate(item)])])	#powerSet of the given item set. It will be directly used for generating binary association rules
-# 	for subset in powerSet:
-# 		_subset = item.difference(subset)		#the complement of the given subset. We are checking the rule: subset-->_subset
-# 		if(len(_subset)>0):
-# 			confidence = float(patterns[itemset])/patterns[subset]
-# 			if(confidence >= minConfidence):
-# 				rules.append(((tuple(subset),tuple(_subset)),confidence))
-
 
 print('ITEMS:-')
 for k, v in patterns.items():
-	print (str(k) + '              ' + str( (float(v)/len(transactions))))
-# print(patterns)
+	print (str(k) + '              ' + str( (float(v)/len(transactions)))) 
+# # print(patterns)
 print('\nRULES:-')
 for k, v in rules.items():
 	print (str(k) + '               ' + str(v))
-
-# for rule,confidence in rules:
-# 	print(str(rule[0])+"-->"+str(rule[1])+"             "+str(confidence))

@@ -2,12 +2,12 @@ from itertools import chain, combinations		#for generating powerset of a given s
 import time
 time_init = time.time()
 
-minSupport = 0.8
-minConfidence = 0.9
+minSupport = 0.1
+minConfidence = 0.6
 
 itemSet = set()
 transactions = []		
-data = open('chess.csv', 'rU')	#reading the dataset
+data = open('retail.csv', 'rU')	#reading the dataset
 
 freqSet = dict()	#dictionary that stores frequency of each itemset
 
@@ -85,10 +85,10 @@ for key, value in largeSet.items():
 #STEP3: Displaying the results:-
 itemsets.sort(key = lambda x: x[1])
 print('ITEMS:-')
-#print(itemsets)
-#for item,support in itemsets:
-#	print(str(item)+"            "+str(support))
+print(itemsets)
+for item,support in itemsets:
+	print(str(item)+"            "+str(support))
 print('\nRULES:-')
 rules.sort(key = lambda x: x[1])
-#for rule,confidence in rules:
-	#print(str(rule[0])+"-->"+str(rule[1])+"             "+str(confidence))
+for rule,confidence in rules:
+	print(str(rule[0])+"-->"+str(rule[1])+"             "+str(confidence))
