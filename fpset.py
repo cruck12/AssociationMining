@@ -1,4 +1,5 @@
 import itertools
+from itertools import chain, combinations
 
 minSupport = 0.025
 minConfidence = 0.6
@@ -58,6 +59,7 @@ class FPTree(object):
 	def __init__(self, transactions, threshold, root_value, root_count):
 		"""
 		Initialize the tree.
+		Transactions -- list of iterable items 
 		"""
 		self.frequent = self.find_frequent_items(transactions, threshold)
 		self.headers = self.build_header_table(self.frequent)
@@ -278,7 +280,7 @@ def generate_association_rules(patterns, confidence_threshold):
 					confidence = float(upper_support) / lower_support
 
 					if confidence >= confidence_threshold:
-						rules[antecedent] = (consequent, confidence)
+						rules[antecedent,consequent] = (confidence)
 
 	return rules
 
@@ -301,14 +303,29 @@ for line in data:
 	transactions.append(transaction)
 
 patterns = find_frequent_patterns(transactions, minSupport*len(transactions))
+	
+# print (patterns)
 
 rules = generate_association_rules(patterns, minConfidence)
+# rules = []
+# for itemset in patterns.keys():
+# 	item = set(itemset)
+# 	powerSet = map(frozenset, [x for x in chain(*[combinations(item, i + 1) for i, a in enumerate(item)])])	#powerSet of the given item set. It will be directly used for generating binary association rules
+# 	for subset in powerSet:
+# 		_subset = item.difference(subset)		#the complement of the given subset. We are checking the rule: subset-->_subset
+# 		if(len(_subset)>0):
+# 			confidence = float(patterns[itemset])/patterns[subset]
+# 			if(confidence >= minConfidence):
+# 				rules.append(((tuple(subset),tuple(_subset)),confidence))
 
 
 print('ITEMS:-')
 for k, v in patterns.items():
-	print (k, '                  ', (float(v)/len(transactions)))
+	print (str(k) + '              ' + str( (float(v)/len(transactions))))
 # print(patterns)
 print('\nRULES:-')
 for k, v in rules.items():
-	print (k, '-->', v)
+	print (str(k) + '               ' + str(v))
+
+# for rule,confidence in rules:
+# 	print(str(rule[0])+"-->"+str(rule[1])+"             "+str(confidence))
