@@ -1,11 +1,13 @@
 from itertools import chain, combinations		#for generating powerset of a given set
+import time
+time_init = time.time()
 
-minSupport = 0.025
-minConfidence = 0.6
+minSupport = 0.8
+minConfidence = 0.9
 
 itemSet = set()
 transactions = []		
-data = open('retail.csv', 'rU')	#reading the dataset
+data = open('chess.csv', 'rU')	#reading the dataset
 
 freqSet = dict()	#dictionary that stores frequency of each itemset
 
@@ -34,23 +36,37 @@ largeSet = dict()	#dictionary that stores the itemsets statisfying the minSuppor
 #STEP 1: Generate all itemsets of all lengths that satisfy the minSupport condition:-
 k=2
 while(currentSet != set([])):
+	print(k)
 	largeSet[k-1] = currentSet
 	currentSet = set([i.union(j) for i in currentSet for j in currentSet if len(i.union(j)) == k])	#generate itemset of k length by taking selective union of elements in itemset of k-1 length
 
 	#pruning the currentSet to accomodate only those which satisfy the minSupport condition:-
 	_currenSet = set()
 	for item in currentSet:
-		counter = 0
-		for transaction in transactions:
-			if(item.issubset(transaction)):
-				counter += 1
-		support = float(counter)/len(transactions)
-		if(support >= minSupport):
-			_currenSet.add(item)
-			freqSet[item] = counter
+		#checking for Apriori's principle:-
+		flag = False
+		"""_item = set(item)
+		for element in _item:
+			_item.remove(element)
+			if not(_item in (largeSet[k-1])):
+				flag = True
+				break
+			_item.add(element)"""
+
+		#checking minSupport condition
+		if(not(flag)):
+			counter = 0
+			for transaction in transactions:
+				if(item.issubset(transaction)):
+					counter += 1
+			support = float(counter)/len(transactions)
+			if(support >= minSupport):
+				_currenSet.add(item)
+				freqSet[item] = counter
 	currentSet = _currenSet
 	k += 1
 
+print(time.time()-time_init)
 #STEP 2: Identify the rules that satisfy the minConfidence condition:-
 rules = []
 for key, value in largeSet.items()[1:]:		#value = all itemsets with length=key, such that they satisfy minSupport condition
@@ -70,9 +86,9 @@ for key, value in largeSet.items():
 itemsets.sort(key = lambda x: x[1])
 print('ITEMS:-')
 #print(itemsets)
-for item,support in itemsets:
-	print(str(item)+"            "+str(support))
+#for item,support in itemsets:
+#	print(str(item)+"            "+str(support))
 print('\nRULES:-')
 rules.sort(key = lambda x: x[1])
-for rule,confidence in rules:
-	print(str(rule[0])+"-->"+str(rule[1])+"             "+str(confidence))
+#for rule,confidence in rules:
+	#print(str(rule[0])+"-->"+str(rule[1])+"             "+str(confidence))
