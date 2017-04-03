@@ -45,13 +45,13 @@ while(currentSet != set([])):
 	for item in currentSet:
 		#checking for Apriori's principle:-
 		flag = False
-		"""_item = set(item)
+		_item = set(item)
 		for element in _item:
 			_item.remove(element)
 			if not(_item in (largeSet[k-1])):
 				flag = True
 				break
-			_item.add(element)"""
+			_item.add(element)
 
 		#checking minSupport condition
 		if(not(flag)):
